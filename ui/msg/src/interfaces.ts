@@ -17,11 +17,11 @@ export interface Me extends User {
   bot: boolean;
 }
 export interface Msg {
-  id: string;
+  id?: string;
   user: string;
   text: string;
   date: Date;
-  deleted: boolean;
+  deleted?: boolean;
 }
 export interface LastMsg extends Msg {
   read: boolean;
