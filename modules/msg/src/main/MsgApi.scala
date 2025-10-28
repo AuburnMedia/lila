@@ -105,6 +105,44 @@ final class MsgApi(
         .one($id(threadId), $addToSet("del" -> me.userId))
         .void
 
+  def deleteMsg(msgId: String, threadId: MsgThread.Id)(using me: Me): Funit =
+    colls.msg.update
+      .one(
+        $doc(
+          "_id" -> msgId,
+          "tid" -> threadId,
+          "user" -> me.userId
+        ),
+        $addToSet("del" -> me.userId)
+      )
+      .flatMap { result =>
+        if result.nModified > 0 then
+          updateThreadLastMsgIfNeeded(threadId)
+        else funit
+      }
+
+  private def updateThreadLastMsgIfNeeded(threadId: MsgThread.Id): Funit =
+    colls.thread.one[MsgThread]($id(threadId)).flatMap {
+      case Some(thread) =>
+        colls.msg
+          .find($doc("tid" -> threadId))
+          .sort($sort.desc("date"))
+          .cursor[Bdoc]()
+          .list(100)
+          .flatMap { docs =>
+            val visibleMsg = docs.flatMap(doc => doc.asOpt[Msg]).find { msg =>
+              msg.del.forall(!_.contains(thread.user1)) && msg.del.forall(!_.contains(thread.user2))
+            }
+            visibleMsg match {
+              case Some(msg) =>
+                colls.thread.updateField($id(threadId), "lastMsg", msg.asLast)
+              case None =>
+                funit
+            }
+          }
+      case None => funit
+    }
+  
   def post(
       orig: UserId,
       dest: UserId,
@@ -173,44 +211,6 @@ final class MsgApi(
       yield res
     }
 
-def deleteMsg(msgId: String, threadId: MsgThread.Id)(using me: Me): Funit =
-  colls.msg.update
-    .one(
-      $doc(
-        "_id" -> msgId,           
-        "tid" -> threadId,        
-        "user" -> me.userId       // Find this message in this thread sent by me
-      ),
-      $addToSet("del" -> me.userId)  // Then add my id to the del list
-    )
-    .flatMap { result =>
-      if result.nModified > 0 then
-        // If this was the last message, update the thread preview
-        updateThreadLastMsgIfNeeded(threadId)
-      else funit
-    }
-
-private def updateThreadLastMsgIfNeeded(threadId: MsgThread.Id): Funit =
-  colls.thread.one[MsgThread]($id(threadId)).flatMap {
-    case Some(thread) =>
-      // Find the most recent message that isn't deleted
-      colls.msg
-        .find($doc("tid" -> threadId))
-        .sort($sort.desc("date"))
-        .cursor[Bdoc]()
-        .list(100)
-        .flatMap { docs =>
-          docs.flatMap(doc => doc.asOpt[Msg]).find(!_.isDeletedFor(thread.users)) match {
-            case Some(msg) =>
-              // Update thread preview to show the next-last message
-              colls.thread.updateField($id(threadId), "lastMsg", msg.asLast)
-            case None =>
-              // All messages deleted - could handle this differently #TODO
-              funit
-          }
-        }
-    case None => funit
-  }
 
   def lastDirectMsg(threadId: MsgThread.Id, maskFor: UserId): Fu[Option[Msg.Last]] =
     colls.thread
