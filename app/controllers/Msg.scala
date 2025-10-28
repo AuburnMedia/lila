@@ -56,6 +56,12 @@ final class Msg(env: Env) extends LilaController(env):
       JsonOk(inboxJson)
   }
 
+  def deleteMsg(username: UserStr, msgId: String) = Auth { ctx ?=> me ?=>
+  env.msg.api.deleteMsg(msgId, MsgThread.id(me, username.id)).inject {
+    JsonOk(Json.obj("ok" -> true))
+  }
+}
+
   def compatCreate = AuthBody { ctx ?=> me ?=>
     ctx.kid.no
       .so(ctx.noBot)
