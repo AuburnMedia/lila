@@ -5,6 +5,7 @@ import play.api.libs.json.*
 import lila.app.{ *, given }
 import lila.common.Json.given
 import lila.core.net.ApiVersion
+import lila.msg.MsgThread
 
 final class Msg(env: Env) extends LilaController(env):
 
