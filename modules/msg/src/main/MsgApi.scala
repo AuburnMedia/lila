@@ -135,7 +135,7 @@ final class MsgApi(
             }
             visibleMsg match {
               case Some(msg) =>
-                colls.thread.updateField($id(threadId), "lastMsg", msg.asLast)
+                colls.thread.updateField($id(threadId), "lastMsg", msg.asLast).void
               case None =>
                 funit
             }
