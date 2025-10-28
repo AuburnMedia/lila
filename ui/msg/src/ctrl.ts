@@ -15,6 +15,7 @@ import * as network from './network';
 import { scroller } from './view/scroller';
 import { storage, type LichessStorage } from 'lib/storage';
 import { pubsub } from 'lib/pubsub';
+import { alert } from 'lib/view/dialogs';
 
 export default class MsgCtrl {
   data: MsgData;
@@ -189,6 +190,23 @@ export default class MsgCtrl {
         history.replaceState({}, '', '/inbox');
       });
   };
+  deleteMsg = (msgId: string) => {
+    if (!this.data.convo) return;
+
+    const username = this.data.convo.user.id;
+
+    network.deleteMsg(username, msgId).then(() => {
+      if (this.data.convo) {
+        this.data.convo.msgs = this.data.convo.msgs.map(m =>
+          m.id === msgId ? { ...m, deleted: true } : m
+        );
+        this.redraw();
+      }
+    }).catch(() => {
+      alert('Failed to delete message');
+    });
+  };
+
 
   block = () => {
     const userId = this.data.convo?.user.id;

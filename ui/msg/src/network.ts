@@ -39,6 +39,10 @@ export async function del(u: string): Promise<MsgData> {
   return upgradeData(d);
 }
 
+export async function deleteMsg(username: string, msgId: string): Promise<void> {
+  await json(`/inbox/${username}/msg/${msgId}`, { method: 'delete' });
+} 
+
 export function report(name: string, text: string): Promise<any> {
   return json('/report/flag', {
     method: 'post',

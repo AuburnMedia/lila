@@ -6,6 +6,8 @@ import { enhance, isMoreThanText, expandLpvs } from './enhance';
 import { scroller } from './scroller';
 import type MsgCtrl from '../ctrl';
 import { alert, confirm, makeLinkPopups } from 'lib/view/dialogs';
+import * as licon from 'lib/licon';
+
 
 export default function renderMsgs(ctrl: MsgCtrl, convo: Convo): VNode {
   return h('div.msg-app__convo__msgs', { hook: { insert: setupMsgs(true), postpatch: setupMsgs(false) } }, [
@@ -52,8 +54,33 @@ function renderDaily(ctrl: MsgCtrl, daily: Daily): VNode[] {
 
 function renderMsg(ctrl: MsgCtrl, msg: Msg) {
   const tag = msg.user === ctrl.data.me.id ? 'mine' : 'their';
-  return h(tag, [renderText(msg), h('em', `${pad2(msg.date.getHours())}:${pad2(msg.date.getMinutes())}`)]);
+  const isMine = msg.user === ctrl.data.me.id;
+  
+  // Show [Message deleted] for deleted messages
+  if (msg.deleted) {
+    return h(tag + '.deleted', [
+      h('t', h('span.deleted-text', '[Message deleted]')),
+      h('em', `${pad2(msg.date.getHours())}:${pad2(msg.date.getMinutes())}`)
+    ]);
+  }
+  
+  return h(tag, [
+    renderText(msg),
+    h('em', [
+      `${pad2(msg.date.getHours())}:${pad2(msg.date.getMinutes())}`,
+      // Delete button - licon.Trash
+      isMine && msg.id ? h('action.delete', {
+        attrs: { 
+          'data-icon': licon.Trash, 
+          'aria-label': 'Delete message',
+          title: 'Delete message'
+        },
+        hook: bind('click', () => ctrl.deleteMsg(msg.id!))
+      }) : null
+    ])
+  ]);
 }
+
 const pad2 = (num: number): string => (num < 10 ? '0' : '') + num;
 
 function groupMsgs(msgs: Msg[]): Daily[] {
