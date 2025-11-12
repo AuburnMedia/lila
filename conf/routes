@@ -459,6 +459,20 @@ GET   /swiss/$id<\w{8}>/player/:user          controllers.Swiss.player(id: Swiss
 POST  /api/swiss/$id<\w{8}>/schedule-next-round controllers.Swiss.scheduleNextRound(id: SwissId)
 GET   /$lang<\w\w\w?>/swiss                   controllers.Swiss.homeLang(lang: Language)
 
+# Official Tournament
+GET   /official-tournament                             controllers.OfficialTournament.home
+GET   /official-tournament/new                         controllers.OfficialTournament.form
+POST  /official-tournament/new                         controllers.OfficialTournament.create
+GET   /official-tournament/$id<\w{8}>                  controllers.OfficialTournament.show(id: OfficialTournamentId)
+GET   /official-tournament/$id<\w{8}>/edit             controllers.OfficialTournament.edit(id: OfficialTournamentId)
+POST  /official-tournament/$id<\w{8}>/edit             controllers.OfficialTournament.update(id: OfficialTournamentId)
+POST  /official-tournament/$id<\w{8}>/join             controllers.OfficialTournament.join(id: OfficialTournamentId)
+POST  /official-tournament/$id<\w{8}>/withdraw         controllers.OfficialTournament.withdraw(id: OfficialTournamentId)
+POST  /official-tournament/$id<\w{8}>/terminate        controllers.OfficialTournament.terminate(id: OfficialTournamentId)
+GET   /api/official-tournament/$id<\w{8}>              controllers.OfficialTournament.apiShow(id: OfficialTournamentId)
+GET   /api/official-tournament                         controllers.OfficialTournament.apiList(format: Option[String] ?= None)
+GET   /api/official-tournament/$id<\w{8}>/bracket      controllers.OfficialTournament.apiBracket(id: OfficialTournamentId)
+
 # Simul
 GET   /simul                                  controllers.Simul.home
 GET   /simul/new                              controllers.Simul.form

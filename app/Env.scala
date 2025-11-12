@@ -60,6 +60,7 @@ final class Env(
   val perfStat: lila.perfStat.Env = wire[lila.perfStat.Env]
   val tournament: lila.tournament.Env = wire[lila.tournament.Env]
   val swiss: lila.swiss.Env = wire[lila.swiss.Env]
+  val officialTournament: lila.officialTournament.Env = wire[lila.officialTournament.Env]
   val mod: lila.mod.Env = wire[lila.mod.Env]
   val team: lila.team.Env = wire[lila.team.Env]
   val teamSearch: lila.teamSearch.Env = wire[lila.teamSearch.Env]
