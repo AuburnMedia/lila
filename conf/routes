@@ -463,9 +463,9 @@ GET   /$lang<\w\w\w?>/swiss                   controllers.Swiss.homeLang(lang: L
 GET   /official                               controllers.OfficialTournament.home
 GET   /official/new                           controllers.OfficialTournament.form
 POST  /official/new                           controllers.OfficialTournament.create
-GET   /official/$id<\w{8}>                    controllers.OfficialTournament.show(id: lila.official.OfficialTournamentId)
-POST  /official/$id<\w{8}>/join               controllers.OfficialTournament.join(id: lila.official.OfficialTournamentId)
-POST  /official/$id<\w{8}>/withdraw           controllers.OfficialTournament.withdraw(id: lila.official.OfficialTournamentId)
+GET   /official/$id<\w{8}>                    controllers.OfficialTournament.show(id: OfficialTournamentId)
+POST  /official/$id<\w{8}>/join               controllers.OfficialTournament.join(id: OfficialTournamentId)
+POST  /official/$id<\w{8}>/withdraw           controllers.OfficialTournament.withdraw(id: OfficialTournamentId)
 
 # Simul
 GET   /simul                                  controllers.Simul.home

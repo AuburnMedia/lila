@@ -2,12 +2,9 @@ package lila.knockout
 
 export lila.core.lilaism.Lilaism.{ *, given }
 export lila.common.extensions.*
+import lila.core.id.KnockoutId
 
 private val logger = lila.log("knockout")
-
-opaque type KnockoutId = String
-object KnockoutId extends OpaqueString[KnockoutId]:
-  def makeId = KnockoutId(ThreadLocalRandom.nextString(8))
 
 opaque type MatchId = String
 object MatchId extends OpaqueString[MatchId]:

@@ -34,7 +34,7 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
       )
   }
 
-  def show(id: lila.official.OfficialTournamentId) = Open:
+  def show(id: OfficialTournamentId) = Open:
     api.byId(id).flatMap:
       case None => NotFound.page(views.html.base.notFound)
       case Some(tournament) =>
@@ -53,13 +53,13 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
           page <- renderPage(ui.show(tournament, data.some))
         yield Ok(page)
 
-  def join(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
+  def join(id: OfficialTournamentId) = Auth { ctx ?=> me ?=>
     api.join(id, me.userId).map: success =>
       if success then Redirect(routes.OfficialTournament.show(id))
       else BadRequest("Could not join tournament")
   }
 
-  def withdraw(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
+  def withdraw(id: OfficialTournamentId) = Auth { ctx ?=> me ?=>
     api.withdraw(id, me.userId).map: success =>
       if success then Redirect(routes.OfficialTournament.show(id))
       else BadRequest("Could not withdraw from tournament")

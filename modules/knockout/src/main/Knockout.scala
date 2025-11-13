@@ -95,7 +95,7 @@ case class Knockout(
 object Knockout:
   val maxPlayers = 256
 
-  def makeId = KnockoutId.makeId
+  def makeId = KnockoutId(ThreadLocalRandom.nextString(8))
 
   // Calculate number of rounds needed for given player count
   def calculateRounds(playerCount: Int): Int =

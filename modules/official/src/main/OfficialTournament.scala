@@ -52,4 +52,4 @@ case class OfficialTournament(
   def speed = chess.Speed(clock)
 
 object OfficialTournament:
-  def makeId = OfficialTournamentId.makeId
+  def makeId = OfficialTournamentId(ThreadLocalRandom.nextString(8))
