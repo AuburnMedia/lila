@@ -3,6 +3,7 @@ package lila.official
 import com.softwaremill.macwire.*
 
 import lila.common.autoconfig.{ *, given }
+import lila.core.config.CollName
 import lila.core.socket.{ GetVersion, SocketVersion }
 import play.api.Configuration
 

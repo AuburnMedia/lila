@@ -3,6 +3,7 @@ package lila.knockout
 export lila.core.lilaism.Lilaism.{ *, given }
 export lila.common.extensions.*
 import lila.core.id.KnockoutId
+import scalalib.ThreadLocalRandom
 
 private val logger = lila.log("knockout")
 

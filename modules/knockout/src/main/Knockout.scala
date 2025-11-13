@@ -4,7 +4,9 @@ import chess.Clock.Config as ClockConfig
 import chess.format.Fen
 import chess.{ Rated, Speed }
 import reactivemongo.api.bson.Macros.Annotations.Key
+import scalalib.ThreadLocalRandom
 
+import lila.core.id.KnockoutId
 import lila.core.tournament.Status
 import lila.rating.PerfType
 

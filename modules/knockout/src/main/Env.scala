@@ -3,6 +3,7 @@ package lila.knockout
 import com.softwaremill.macwire.*
 
 import lila.common.autoconfig.{ *, given }
+import lila.core.config.CollName
 import play.api.Configuration
 
 @Module
