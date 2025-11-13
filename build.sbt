@@ -68,7 +68,7 @@ lazy val modules = Seq(
   // level 7
   // everything else is free from deps; do the big ones first
   relay, security, tournament, plan, round,
-  swiss, insight, fishnet, tutor, mod, challenge, web,
+  swiss, knockout, official, insight, fishnet, tutor, mod, challenge, web,
   team, forum, streamer, simul, activity, msg, ublog,
   notifyModule, clas, perfStat, opening, timeline,
   setup, video, fide, title, push,
@@ -312,6 +312,16 @@ lazy val tournament = module("tournament",
 lazy val swiss = module("swiss",
   Seq(gathering, room, memo),
   Seq(lettuce) ++ tests.bundle
+)
+
+lazy val knockout = module("knockout",
+  Seq(gathering, room, memo),
+  tests.bundle
+)
+
+lazy val official = module("official",
+  Seq(swiss, tournament, knockout, memo, ui),
+  tests.bundle
 )
 
 lazy val simul = module("simul",

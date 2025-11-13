@@ -5,6 +5,7 @@ import chess.{ Rated, variant }
 import reactivemongo.api.bson.Macros.Annotations.Key
 
 import lila.core.tournament.Status
+import lila.core.id.{ SwissId, TourId }
 
 // Enum for tournament types
 enum OfficialTournamentType(val key: String):
@@ -52,51 +53,3 @@ case class OfficialTournament(
 
 object OfficialTournament:
   def makeId = OfficialTournamentId.makeId
-
-  // Factory methods for creating official tournaments
-  def fromSwiss(swiss: lila.swiss.Swiss): OfficialTournament =
-    OfficialTournament(
-      id = makeId,
-      name = swiss.name,
-      tournamentType = OfficialTournamentType.Swiss,
-      swissId = Some(swiss.id),
-      arenaId = None,
-      knockoutId = None,
-      clock = swiss.clock,
-      variant = swiss.variant,
-      rated = swiss.settings.rated,
-      createdAt = swiss.createdAt,
-      createdBy = swiss.createdBy,
-      startsAt = swiss.startsAt,
-      status = swiss.status match
-        case lila.swiss.Swiss.Status.created => Status.created
-        case lila.swiss.Swiss.Status.started => Status.started
-        case lila.swiss.Swiss.Status.finished => Status.finished
-      ,
-      description = swiss.settings.description,
-      password = swiss.settings.password,
-      nbPlayers = swiss.nbPlayers
-    )
-
-  def fromArena(arena: lila.tournament.Tournament): OfficialTournament =
-    OfficialTournament(
-      id = makeId,
-      name = arena.name,
-      tournamentType = OfficialTournamentType.Arena,
-      swissId = None,
-      arenaId = Some(arena.id),
-      knockoutId = None,
-      clock = arena.clock,
-      variant = arena.variant,
-      rated = arena.rated,
-      createdAt = arena.createdAt,
-      createdBy = arena.createdBy,
-      startsAt = arena.startsAt,
-      status = arena.status,
-      description = arena.description,
-      password = arena.password,
-      nbPlayers = arena.nbPlayers
-    )
-
-  // TODO: Implement when Knockout module is ready
-  // def fromKnockout(knockout: lila.knockout.Knockout): OfficialTournament = ???
