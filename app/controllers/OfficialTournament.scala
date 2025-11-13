@@ -38,7 +38,20 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
     api.byId(id).flatMap:
       case None => NotFound.page(views.html.base.notFound)
       case Some(tournament) =>
-        Ok.page(ui.show(tournament))
+        for
+          version <- env.official.version(id)
+          data = play.api.libs.json.Json.obj(
+            "tournament" -> play.api.libs.json.Json.obj(
+              "id" -> tournament.id,
+              "name" -> tournament.name,
+              "tournamentType" -> tournament.tournamentType.key,
+              "status" -> tournament.status.toString,
+              "nbPlayers" -> tournament.nbPlayers,
+              "socketVersion" -> version.value
+            )
+          )
+          page <- renderPage(ui.show(tournament, data.some))
+        yield Ok(page)
 
   def join(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
     api.join(id, me.userId).map: success =>

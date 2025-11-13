@@ -3,6 +3,7 @@ package lila.official
 import com.softwaremill.macwire.*
 
 import lila.common.autoconfig.{ *, given }
+import lila.core.socket.{ GetVersion, SocketVersion }
 import play.api.Configuration
 
 @Module
@@ -14,8 +15,14 @@ private class OfficialConfig(
 final class Env(
     appConfig: Configuration,
     db: lila.db.Db,
-    helpers: lila.ui.Helpers
-)(using Executor):
+    helpers: lila.ui.Helpers,
+    socketKit: lila.core.socket.SocketKit,
+    chat: lila.core.chat.ChatApi
+)(using
+    Executor,
+    akka.actor.ActorSystem,
+    Scheduler
+):
 
   private val config = appConfig.get[OfficialConfig]("official")(AutoConfig.loader)
 
@@ -28,3 +35,10 @@ final class Env(
   lazy val forms: OfficialForm = wire[OfficialForm]
 
   lazy val ui = OfficialUi(helpers)
+
+  private lazy val socket = wire[OfficialSocket]
+
+  def version(id: OfficialTournamentId): Fu[SocketVersion] =
+    socket.rooms.ask[SocketVersion](id.value.into(RoomId))(GetVersion.apply)
+
+  def reload(id: OfficialTournamentId): Unit = socket.reload(id)

@@ -5,7 +5,8 @@ import chess.Clock.Config as ClockConfig
 
 // API for Official Tournament operations
 final class OfficialApi(
-    mongo: OfficialMongo
+    mongo: OfficialMongo,
+    reloadSockets: OfficialTournamentId => Unit
 )(using Executor):
 
   import OfficialTournamentType.*
@@ -43,7 +44,9 @@ final class OfficialApi(
           mongo.official
             .update
             .one($id(id.value), $inc("nbPlayers" -> 1))
-            .map(_.n > 0)
+            .map: result =>
+              if result.n > 0 then reloadSockets(id)
+              result.n > 0
         else fuccess(false)
 
   // Withdraw from tournament
@@ -57,7 +60,9 @@ final class OfficialApi(
           mongo.official
             .update
             .one($id(id.value), $inc("nbPlayers" -> -1))
-            .map(_.n > 0)
+            .map: result =>
+              if result.n > 0 then reloadSockets(id)
+              result.n > 0
         else fuccess(false)
 
   // Get official tournament by ID
