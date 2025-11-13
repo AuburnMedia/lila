@@ -13,7 +13,8 @@ private class OfficialConfig(
 @Module
 final class Env(
     appConfig: Configuration,
-    db: lila.db.Db
+    db: lila.db.Db,
+    helpers: lila.ui.Helpers
 )(using Executor):
 
   private val config = appConfig.get[OfficialConfig]("official")(AutoConfig.loader)
@@ -25,3 +26,5 @@ final class Env(
   lazy val api: OfficialApi = wire[OfficialApi]
 
   lazy val forms: OfficialForm = wire[OfficialForm]
+
+  lazy val ui = OfficialUi(helpers)

@@ -11,24 +11,25 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
 
   private def api = env.official.api
   private def forms = env.official.forms
+  private def ui = env.official.ui
 
   def home = Open:
     for
       tournaments <- api.list(1, 20)
-      page <- renderPage(views.html.base.notFound) // TODO: Create proper view
+      page <- renderPage(ui.home(tournaments))
     yield Ok(page)
 
   def form = Auth { ctx ?=> me ?=>
-    Ok.page(env.official.forms.create.bindFromRequest())
+    Ok.page(ui.form.create(forms.create))
   }
 
   def create = AuthBody { ctx ?=> me ?=>
-    env.official.forms.create
+    forms.create
       .bindFromRequest()
       .fold(
-        err => BadRequest.page(err), // TODO: proper form error page
+        err => BadRequest.page(ui.form.create(err)),
         setup =>
-          // TODO: Implement tournament creation
+          // TODO: Implement tournament creation logic
           Redirect(routes.OfficialTournament.home)
       )
   }
@@ -37,15 +38,14 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
     api.byId(id).flatMap:
       case None => NotFound.page(views.html.base.notFound)
       case Some(tournament) =>
-        // TODO: Render proper tournament view
-        Ok.page(views.html.base.notFound)
+        Ok.page(ui.show(tournament))
 
   def join(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
-    // TODO: Implement join logic
+    // TODO: Implement join logic via api
     Redirect(routes.OfficialTournament.show(id))
   }
 
   def withdraw(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
-    // TODO: Implement withdraw logic
+    // TODO: Implement withdraw logic via api
     Redirect(routes.OfficialTournament.show(id))
   }
