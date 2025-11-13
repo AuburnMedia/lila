@@ -1,6 +1,7 @@
 package lila.official
 
 import lila.db.dsl.{ *, given }
+import chess.Clock.Config as ClockConfig
 
 // API for Official Tournament operations
 final class OfficialApi(
@@ -8,6 +9,56 @@ final class OfficialApi(
 )(using Executor):
 
   import OfficialTournamentType.*
+
+  // Create a new official tournament
+  def create(setup: OfficialSetup, createdBy: UserId): Fu[OfficialTournament] =
+    val tournament = OfficialTournament(
+      id = OfficialTournament.makeId,
+      name = setup.name.getOrElse(s"${createdBy.value}'s Tournament"),
+      tournamentType = setup.tournamentTypeEnum,
+      swissId = None, // TODO: Create underlying Swiss if type is Swiss
+      arenaId = None, // TODO: Create underlying Arena if type is Arena
+      knockoutId = None, // TODO: Create underlying Knockout if type is Knockout
+      clock = setup.clockConfig,
+      variant = setup.realVariant,
+      rated = setup.realRated,
+      createdAt = nowInstant,
+      createdBy = createdBy,
+      startsAt = setup.startDate.getOrElse(nowInstant.plusMinutes(5)),
+      status = lila.core.tournament.Status.created,
+      description = setup.description,
+      password = setup.password,
+      nbPlayers = 0
+    )
+    insert(tournament).inject(tournament)
+
+  // Join tournament
+  def join(id: OfficialTournamentId, userId: UserId): Fu[Boolean] =
+    byId(id).flatMap:
+      case None => fuccess(false)
+      case Some(tournament) =>
+        if tournament.isEnterable then
+          // TODO: Add player to tournament and underlying Swiss/Arena/Knockout
+          // For now just increment player count
+          mongo.official
+            .update
+            .one($id(id.value), $inc("nbPlayers" -> 1))
+            .map(_.n > 0)
+        else fuccess(false)
+
+  // Withdraw from tournament
+  def withdraw(id: OfficialTournamentId, userId: UserId): Fu[Boolean] =
+    byId(id).flatMap:
+      case None => fuccess(false)
+      case Some(tournament) =>
+        if tournament.isCreated then
+          // TODO: Remove player from tournament and underlying Swiss/Arena/Knockout
+          // For now just decrement player count
+          mongo.official
+            .update
+            .one($id(id.value), $inc("nbPlayers" -> -1))
+            .map(_.n > 0)
+        else fuccess(false)
 
   // Get official tournament by ID
   def byId(id: OfficialTournamentId): Fu[Option[OfficialTournament]] =

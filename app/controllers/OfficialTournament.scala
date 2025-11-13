@@ -29,8 +29,8 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
       .fold(
         err => BadRequest.page(ui.form.create(err)),
         setup =>
-          // TODO: Implement tournament creation logic
-          Redirect(routes.OfficialTournament.home)
+          api.create(setup, me.userId).map: tournament =>
+            Redirect(routes.OfficialTournament.show(tournament.id))
       )
   }
 
@@ -41,11 +41,13 @@ final class OfficialTournament(env: Env)(using akka.stream.Materializer) extends
         Ok.page(ui.show(tournament))
 
   def join(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
-    // TODO: Implement join logic via api
-    Redirect(routes.OfficialTournament.show(id))
+    api.join(id, me.userId).map: success =>
+      if success then Redirect(routes.OfficialTournament.show(id))
+      else BadRequest("Could not join tournament")
   }
 
   def withdraw(id: lila.official.OfficialTournamentId) = Auth { ctx ?=> me ?=>
-    // TODO: Implement withdraw logic via api
-    Redirect(routes.OfficialTournament.show(id))
+    api.withdraw(id, me.userId).map: success =>
+      if success then Redirect(routes.OfficialTournament.show(id))
+      else BadRequest("Could not withdraw from tournament")
   }
