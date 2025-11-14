@@ -2,6 +2,7 @@ package lila.knockout
 
 import reactivemongo.api.bson.*
 
+import lila.core.tournament.Status
 import lila.db.dsl.{ *, given }
 
 private object BsonHandlers:
@@ -9,6 +10,9 @@ private object BsonHandlers:
   // Import standard handlers for chess types
   given BSONHandler[chess.variant.Variant] = variantByKeyHandler
   given BSONHandler[chess.Clock.Config] = clockConfigHandler
+  
+  // Tournament Status handler (same pattern as tournament module)
+  given BSONHandler[Status] = valueMapHandler(Status.byId)(_.id)
 
   given BSONHandler[SeedingMethod] = tryHandler[SeedingMethod](
     {
