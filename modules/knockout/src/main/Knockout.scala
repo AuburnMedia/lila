@@ -17,6 +17,7 @@ enum KnockoutStatus:
 // Match in a knockout tournament
 case class KnockoutMatch(
     id: MatchId,
+    knockoutId: KnockoutId,
     round: KnockoutRoundNumber,
     position: Int, // Position in the bracket
     player1: Option[UserId],
@@ -36,8 +37,9 @@ enum MatchStatus:
 // Player state in knockout tournament
 case class KnockoutPlayer(
     userId: UserId,
+    knockoutId: KnockoutId,
     rating: Int,
-    seed: Option[Int] = None,
+    seed: Int,
     currentRound: KnockoutRoundNumber,
     isActive: Boolean = true,
     isEliminated: Boolean = false
@@ -49,21 +51,15 @@ case class Knockout(
     name: String,
     clock: ClockConfig,
     variant: chess.variant.Variant,
-    round: KnockoutRoundNumber, // current round
+    currentRound: KnockoutRoundNumber, // current round
     totalRounds: Int, // calculated from player count
     nbPlayers: Int,
-    nbActive: Int, // players still in tournament
     createdAt: Instant,
     createdBy: UserId,
     startsAt: Instant,
-    rated: Rated,
     seedingMethod: SeedingMethod,
     status: Status,
-    password: Option[String] = None,
-    description: Option[String] = None,
-    finishedAt: Option[Instant] = None,
-    winnerId: Option[UserId] = None,
-    matches: List[KnockoutMatch] = Nil
+    winnerId: Option[UserId] = None
 ):
   def isCreated = status == Status.created
   def isStarted = status == Status.started
@@ -76,23 +72,7 @@ case class Knockout(
   def progressPercent: Int =
     if isCreated then 0
     else if isFinished then 100
-    else (round.value * 100 / totalRounds).atMost(100)
-
-  def currentRoundMatches: List[KnockoutMatch] =
-    matches.filter(_.round == round)
-
-  def isRoundComplete: Boolean =
-    currentRoundMatches.forall(_.isComplete)
-
-  def canAdvanceRound: Boolean =
-    isStarted && isRoundComplete && round.value < totalRounds
-
-  // Advance to next round
-  def advanceRound: Knockout =
-    copy(
-      round = round.next,
-      nbActive = matches.count(m => m.round == round.next && !m.isBye)
-    )
+    else (currentRound.value * 100 / totalRounds).atMost(100)
 
 object Knockout:
   val maxPlayers = 256

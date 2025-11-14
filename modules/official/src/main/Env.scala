@@ -19,7 +19,8 @@ final class Env(
     db: lila.db.Db,
     helpers: lila.ui.Helpers,
     socketKit: lila.core.socket.SocketKit,
-    chat: lila.core.chat.ChatApi
+    chat: lila.core.chat.ChatApi,
+    knockoutEnv: lila.knockout.Env
 )(using
     Executor,
     akka.actor.ActorSystem,
@@ -39,6 +40,8 @@ final class Env(
   lazy val ui = OfficialUi(helpers)
 
   private lazy val socket = wire[OfficialSocket]
+  
+  private lazy val knockoutApi = knockoutEnv.api
 
   def version(id: OfficialTournamentId): Fu[SocketVersion] =
     socket.rooms.ask[SocketVersion](id.value.into(RoomId))(GetVersion.apply)

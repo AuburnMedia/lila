@@ -18,7 +18,7 @@ private class KnockoutConfig(
 final class Env(
     appConfig: Configuration,
     db: lila.db.Db
-)(using Executor):
+)(using Executor, Scheduler):
 
   private val config = appConfig.get[KnockoutConfig]("knockout")(using AutoConfig.loader)
 
@@ -27,6 +27,8 @@ final class Env(
   private lazy val knockoutPlayerColl = db(config.knockoutPlayerColl)
 
   lazy val mongo = KnockoutMongo(knockoutColl, knockoutMatchColl, knockoutPlayerColl)
+
+  lazy val api: KnockoutApi = wire[KnockoutApi]
 
 // MongoDB access
 final class KnockoutMongo(
