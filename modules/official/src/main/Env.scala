@@ -26,7 +26,7 @@ final class Env(
     Scheduler
 ):
 
-  private val config = appConfig.get[OfficialConfig]("official")(AutoConfig.loader)
+  private val config = appConfig.get[OfficialConfig]("official")(using AutoConfig.loader)
 
   private lazy val officialColl = db(config.officialColl)
 

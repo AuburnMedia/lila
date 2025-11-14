@@ -20,7 +20,7 @@ final class Env(
     db: lila.db.Db
 )(using Executor):
 
-  private val config = appConfig.get[KnockoutConfig]("knockout")(AutoConfig.loader)
+  private val config = appConfig.get[KnockoutConfig]("knockout")(using AutoConfig.loader)
 
   private lazy val knockoutColl = db(config.knockoutColl)
   private lazy val knockoutMatchColl = db(config.knockoutMatchColl)

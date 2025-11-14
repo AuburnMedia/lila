@@ -6,6 +6,10 @@ import lila.db.dsl.{ *, given }
 
 private object BsonHandlers:
 
+  // Import standard handlers for chess types
+  given BSONHandler[chess.variant.Variant] = variantByKeyHandler
+  given BSONHandler[chess.Clock.Config] = clockConfigHandler
+
   given BSONHandler[SeedingMethod] = tryHandler[SeedingMethod](
     {
       case BSONString("random") => scala.util.Success(SeedingMethod.Random)
