@@ -83,4 +83,4 @@ final class OfficialApi(
     mongo.official.insert.one(tournament).void
 
 // MongoDB access
-final class OfficialMongo(val official: lila.db.AsyncColl)
+final class OfficialMongo(val official: Coll)

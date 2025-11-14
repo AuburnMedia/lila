@@ -5,6 +5,7 @@ import com.softwaremill.macwire.*
 import lila.common.autoconfig.{ *, given }
 import lila.core.config.CollName
 import lila.core.socket.{ GetVersion, SocketVersion }
+import lila.db.dsl.Coll
 import play.api.Configuration
 
 @Module

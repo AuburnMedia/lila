@@ -4,6 +4,7 @@ import com.softwaremill.macwire.*
 
 import lila.common.autoconfig.{ *, given }
 import lila.core.config.CollName
+import lila.db.dsl.Coll
 import play.api.Configuration
 
 @Module
@@ -29,7 +30,7 @@ final class Env(
 
 // MongoDB access
 final class KnockoutMongo(
-    val knockout: lila.db.AsyncColl,
-    val knockoutMatch: lila.db.AsyncColl,
-    val knockoutPlayer: lila.db.AsyncColl
+    val knockout: Coll,
+    val knockoutMatch: Coll,
+    val knockoutPlayer: Coll
 )
