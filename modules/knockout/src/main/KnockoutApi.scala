@@ -29,12 +29,12 @@ final class KnockoutApi(mongo: KnockoutMongo)(using Executor):
       variant = variant,
       status = lila.core.tournament.Status.created,
       currentRound = KnockoutRoundNumber(0),
-      totalRounds = KnockoutBracket.calculateRounds(players.size),
+      totalRounds = Knockout.calculateRounds(players.size),
       nbPlayers = players.size,
       winnerId = none,
       seedingMethod = seedingMethod
     )
-    mongo.knockout.insert.one(knockout).inject(knockout)
+    mongo.knockout.insert.one(knockout)(using BsonHandlers.given_BSONDocumentHandler_Knockout).inject(knockout)
 
   def join(id: KnockoutId, userId: UserId): Fu[Option[Knockout]] =
     byId(id).flatMap:
@@ -44,15 +44,16 @@ final class KnockoutApi(mongo: KnockoutMongo)(using Executor):
         else
           val player = KnockoutPlayer(
             userId = userId,
+            knockoutId = id,
             rating = 1500, // TODO: get actual rating
             seed = knockout.nbPlayers + 1,
             currentRound = KnockoutRoundNumber(0),
             isEliminated = false
           )
           for
-            _ <- mongo.knockoutPlayer.insert.one(player)
+            _ <- mongo.knockoutPlayer.insert.one(player)(using BsonHandlers.given_BSONDocumentHandler_KnockoutPlayer)
             updated = knockout.copy(nbPlayers = knockout.nbPlayers + 1)
-            _ <- mongo.knockout.update.one($id(id), updated)
+            _ <- mongo.knockout.update.one($id(id), updated)(using BsonHandlers.given_BSONDocumentHandler_Knockout)
           yield updated.some
 
   def withdraw(id: KnockoutId, userId: UserId): Fu[Option[Knockout]] =
@@ -64,7 +65,7 @@ final class KnockoutApi(mongo: KnockoutMongo)(using Executor):
           for
             _ <- mongo.knockoutPlayer.delete.one($doc("userId" -> userId, "knockoutId" -> id))
             updated = knockout.copy(nbPlayers = (knockout.nbPlayers - 1).atLeast(0))
-            _ <- mongo.knockout.update.one($id(id), updated)
+            _ <- mongo.knockout.update.one($id(id), updated)(using BsonHandlers.given_BSONDocumentHandler_Knockout)
           yield updated.some
 
   def start(id: KnockoutId): Fu[Option[Knockout]] =
@@ -78,29 +79,20 @@ final class KnockoutApi(mongo: KnockoutMongo)(using Executor):
           .list[KnockoutPlayer]($doc("knockoutId" -> id))
           .flatMap: players =>
             // Generate bracket
-            val bracket = KnockoutBracket.generateBracket(
-              players.map(_.userId),
+            val matches = KnockoutBracket.generateBracket(
+              players,
               knockout.seedingMethod
             )
-            // Create matches
-            val matches = bracket.matches.map: m =>
-              KnockoutMatch(
-                id = MatchId.makeId,
-                knockoutId = id,
-                round = m.round,
-                position = m.position,
-                player1 = m.player1,
-                player2 = m.player2,
-                winner = none,
-                status = m.status
-              )
+            // Add knockoutId to matches
+            val matchesWithId = matches.map: m =>
+              m.copy(knockoutId = id)
             for
-              _ <- mongo.knockoutMatch.insert.many(matches)
+              _ <- mongo.knockoutMatch.insert.many(matchesWithId)(using BsonHandlers.given_BSONDocumentHandler_KnockoutMatch)
               updated = knockout.copy(
                 status = lila.core.tournament.Status.started,
                 currentRound = KnockoutRoundNumber(1)
               )
-              _ <- mongo.knockout.update.one($id(id), updated)
+              _ <- mongo.knockout.update.one($id(id), updated)(using BsonHandlers.given_BSONDocumentHandler_Knockout)
             yield updated.some
 
   def finish(id: KnockoutId, winnerId: UserId): Fu[Option[Knockout]] =
@@ -111,7 +103,7 @@ final class KnockoutApi(mongo: KnockoutMongo)(using Executor):
           status = lila.core.tournament.Status.finished,
           winnerId = winnerId.some
         )
-        mongo.knockout.update.one($id(id), updated).inject(updated.some)
+        mongo.knockout.update.one($id(id), updated)(using BsonHandlers.given_BSONDocumentHandler_Knockout).inject(updated.some)
 
   def list(limit: Int = 50): Fu[List[Knockout]] =
     mongo.knockout.list[Knockout](

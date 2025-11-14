@@ -53,6 +53,7 @@ object KnockoutBracket:
       (0 until matchesInRound).map { position =>
         KnockoutMatch(
           id = MatchId.makeId,
+          knockoutId = players.headOption.map(_.knockoutId).getOrElse(KnockoutId("")),
           round = KnockoutRoundNumber(roundNum),
           position = position,
           player1 = None,
@@ -69,6 +70,7 @@ object KnockoutBracket:
       players: List[KnockoutPlayer],
       byesNeeded: Int
   ): List[KnockoutMatch] =
+    val knockoutId = players.headOption.map(_.knockoutId).getOrElse(KnockoutId(""))
     val playersWithByes = players.take(byesNeeded)
     val playersInMatches = players.drop(byesNeeded)
 
@@ -76,6 +78,7 @@ object KnockoutBracket:
     val byeMatches = playersWithByes.zipWithIndex.map { case (player, i) =>
       KnockoutMatch(
         id = MatchId.makeId,
+        knockoutId = knockoutId,
         round = KnockoutRoundNumber(1),
         position = i,
         player1 = Some(player.userId),
@@ -95,6 +98,7 @@ object KnockoutBracket:
         val p2 = pair.lift(1).map(_.userId)
         KnockoutMatch(
           id = MatchId.makeId,
+          knockoutId = knockoutId,
           round = KnockoutRoundNumber(1),
           position = byeMatches.length + i,
           player1 = p1,
